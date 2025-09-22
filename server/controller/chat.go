@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"fmt"
 	"net/http"
 	"sevent_cow/db"
 	"sevent_cow/entity"
@@ -16,6 +17,7 @@ func init() {
 	chatRouter := router.ApiRouter().Group("/chat", router.AuthMiddleware())
 
 	chatRouter.POST("/create", controller.CreateChat)
+	chatRouter.POST("/send", controller.SendMessage)
 }
 
 type ChatController struct{}
@@ -47,4 +49,43 @@ func (cc *ChatController) CreateChat(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, response.ResponseOk("创建成功"))
+}
+
+// 用户发送消息
+func (cc *ChatController) SendMessage(c *gin.Context) {
+	type Require struct {
+		ChatId    int64  `json:"chatId" binding:"required"`
+		Content   string `json:"content" binding:"required"`
+		AudioLink string `json:"audioLink" binding:"required"`
+	}
+
+	var req Require
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, response.ResponseBadRequest("参数错误"))
+		return
+	}
+
+	var chat entity.Chat
+
+	if err := db.DB().Preload("Role").Where("id = ?", req.ChatId).First(&chat).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, response.ResponseInternalServerErr("发送失败, 原因：少打听"))
+		return
+	}
+
+	// 将用户发送的消息插入数据库
+	if err := db.DB().Create(&entity.ChatMsg{
+		ChatId:    req.ChatId,
+		MsgType:   1, // 1代表用户 2代表ai
+		Content:   req.Content,
+		AudioLink: req.AudioLink,
+	}).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, response.ResponseInternalServerErr("发送失败, 原因：少打听"))
+		return
+	}
+
+	// TODO: 发送消息给ai等待ai应答
+	fmt.Println(chat)
+
+	c.JSON(http.StatusOK, response.ResponseOk("发送成功"))
 }

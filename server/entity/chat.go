@@ -7,4 +7,5 @@ type Chat struct {
 	UserId      int64  `gorm:"column:user_id" json:"userId"`
 	CreatedTime string `gorm:"column:created_time;default:" json:"createdTime"`
 	Name        string `gorm:"column:name" json:"name"`
+	Role        Role   `gorm:"foreignKey:RoleId;references:ID" json:"role"`
 }
