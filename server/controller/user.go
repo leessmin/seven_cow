@@ -42,8 +42,5 @@ func (u *UserController) Register(c *gin.Context) {
 		db.DB().Create(&user)
 	}
 
-	c.JSON(http.StatusOK, response.ResponseOk(gin.H{
-		"msg":  "注册成功",
-		"user": user,
-	}))
+	c.JSON(http.StatusOK, response.ResponseOk(user))
 }
