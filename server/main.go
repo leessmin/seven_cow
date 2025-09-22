@@ -1,7 +1,12 @@
 package main
 
-import "fmt"
+import (
+	"sevent_cow/config"
+	_ "sevent_cow/controller"
+	"sevent_cow/router"
+)
 
-func main(){
-	fmt.Println("hello world")
+func main() {
+
+	router.Run(config.ConfigValue().Server.Addr)
 }

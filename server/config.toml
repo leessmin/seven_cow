@@ -1,0 +1,13 @@
+# 服务器配置
+[server]
+# 服务器监听的地址
+addr = ":8080"
+# token加盐
+token_salt = "BBGU~_~|_|zysynl"
+# 上传的目录
+upload_dir = "./upload"
+
+# 数据库配置
+[db]
+# postgresql连接地址
+postgresql = "host=192.168.56.6 user=postgres password=1425 dbname=seven_cow port=5432 sslmode=disable TimeZone=Asia/Shanghai"
