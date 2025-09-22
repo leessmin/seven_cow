@@ -26,7 +26,7 @@ func AuthMiddleware() gin.HandlerFunc {
 			return
 		}
 
-		userId, err := strconv.Atoi(id)
+		userId, err := strconv.ParseInt(id, 10, 64)
 		if err != nil {
 			ctx.JSON(http.StatusUnauthorized, response.ResponseUnauthorized())
 			ctx.Abort()
