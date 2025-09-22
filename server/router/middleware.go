@@ -3,6 +3,7 @@ package router
 import (
 	"net/http"
 	"sevent_cow/response"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
@@ -18,8 +19,15 @@ func AuthMiddleware() gin.HandlerFunc {
 			return
 		}
 
-		userId := token[7:]
-		if userId == "" {
+		id := token[7:]
+		if id == "" {
+			ctx.JSON(http.StatusUnauthorized, response.ResponseUnauthorized())
+			ctx.Abort()
+			return
+		}
+
+		userId, err := strconv.Atoi(id)
+		if err != nil {
 			ctx.JSON(http.StatusUnauthorized, response.ResponseUnauthorized())
 			ctx.Abort()
 			return
