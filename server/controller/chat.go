@@ -1,13 +1,19 @@
 package controller
 
 import (
+	"encoding/json"
+	"fmt"
+	"log"
 	"net/http"
 	"sevent_cow/db"
 	"sevent_cow/entity"
+	"sevent_cow/internal/sse"
 	"sevent_cow/response"
 	"sevent_cow/router"
 	"sevent_cow/utils/llm"
 	"sevent_cow/utils/tts"
+	"strconv"
+	"time"
 
 	"github.com/gin-gonic/gin"
 )
@@ -19,6 +25,7 @@ func init() {
 
 	chatRouter.POST("/create", controller.CreateChat)
 	chatRouter.POST("/send", controller.SendMessage)
+	chatRouter.GET("/content", controller.ChatContent)
 }
 
 type ChatController struct{}
@@ -76,14 +83,21 @@ func (cc *ChatController) SendMessage(c *gin.Context) {
 	}
 
 	// 将用户发送的消息插入数据库
-	if err := db.DB().Create(&entity.ChatMsg{
-		ChatId:    req.ChatId,
-		MsgType:   1, // 1代表用户 2代表ai
-		Content:   req.Content,
-		AudioLink: req.AudioLink,
-	}).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, response.ResponseInternalServerErr("发送失败, 原因：少打听"))
-		return
+	{
+		chatMsg := entity.ChatMsg{
+			ChatId:    req.ChatId,
+			MsgType:   1, // 1代表用户 2代表ai
+			Content:   req.Content,
+			AudioLink: req.AudioLink,
+		}
+		if err := db.DB().Create(&chatMsg).Error; err != nil {
+			c.JSON(http.StatusInternalServerError, response.ResponseInternalServerErr("发送失败, 原因：少打听"))
+			return
+		}
+
+		sse.BroadcastSSE(req.ChatId, sse.ChatContent{
+			Msg: []entity.ChatMsg{chatMsg},
+		})
 	}
 
 	aiContent, err := llm.RequireLLM(*llm.NewChatRequest(llm.NewMessages(chat.Role.Prompt, req.Content)))
@@ -100,15 +114,93 @@ func (cc *ChatController) SendMessage(c *gin.Context) {
 	}
 
 	// 将AI回复的消息插入数据库
-	if err := db.DB().Create(&entity.ChatMsg{
-		ChatId:    req.ChatId,
-		MsgType:   2, // 1代表用户 2代表ai
-		Content:   aiContent,
-		AudioLink: aiAudioLink,
-	}).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, response.ResponseInternalServerErr("发送失败, 原因：少打听"))
-		return
+	{
+		chatMsg := entity.ChatMsg{
+			ChatId:    req.ChatId,
+			MsgType:   2, // 1代表用户 2代表ai
+			Content:   aiContent,
+			AudioLink: aiAudioLink,
+		}
+		if err := db.DB().Create(&chatMsg).Error; err != nil {
+			c.JSON(http.StatusInternalServerError, response.ResponseInternalServerErr("发送失败, 原因：少打听"))
+			return
+		}
+		sse.BroadcastSSE(req.ChatId, sse.ChatContent{
+			Msg: []entity.ChatMsg{chatMsg},
+		})
 	}
 
 	c.JSON(http.StatusOK, response.ResponseOk("发送成功"))
+}
+
+// 聊天内容 sse 会实时推送消息
+func (cc *ChatController) ChatContent(c *gin.Context) {
+	chatIdStr, b := c.GetQuery("chatId")
+	if !b {
+		c.JSON(http.StatusBadRequest, response.ResponseBadRequest("参数错误"))
+		return
+	}
+	chatIdInt64, err := strconv.ParseInt(chatIdStr, 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, response.ResponseBadRequest("参数错误"))
+		return
+	}
+
+	c.Writer.Header().Set("Content-Type", "text/event-stream")
+	c.Writer.Header().Set("Cache-Control", "no-cache")
+	c.Writer.Header().Set("Connection", "keep-alive")
+	c.Writer.Flush()
+
+	var chat entity.Chat
+
+	// 获取聊天窗口信息
+	if err := db.DB().Preload("Role").Where("id = ?", chatIdInt64).First(&chat).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, response.ResponseInternalServerErr("获取失败, 原因：少打听"))
+		return
+	}
+
+	var chatMsgs []entity.ChatMsg
+
+	if err := db.DB().Where("chat_id = ?", chatIdInt64).Order("created_time ASC").Find(&chatMsgs).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, response.ResponseInternalServerErr("获取失败, 原因：少打听"))
+		return
+	}
+
+	{
+		err := cc.sendSSE(c, sse.ChatContent{
+			Chat: chat,
+			Msg:  chatMsgs,
+		})
+		if err != nil {
+			fmt.Println("发送失败，原因：", err)
+		}
+	}
+
+	// 注册 SSE channel
+	ch := sse.RegisterSSE(chatIdInt64)
+
+	for {
+		// 监听 channel 推送新消息
+		for msg := range ch {
+			if err := cc.sendSSE(c, msg); err != nil {
+				log.Println("sse关闭，原因：", err)
+				break
+			}
+			time.Sleep(time.Millisecond * 50) // 防止 CPU 空转 占用过多cpu
+		}
+	}
+
+}
+
+func (cc *ChatController) sendSSE(c *gin.Context, msg sse.ChatContent) error {
+	data, err := json.Marshal(msg)
+	if err != nil {
+		// 遇到序列化失败就跳过
+		return err
+	}
+
+	// 发送 SSE 消息
+	fmt.Fprintf(c.Writer, "data: %s\n\n", data)
+	c.Writer.Flush()
+	return nil
 }
