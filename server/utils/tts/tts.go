@@ -38,6 +38,7 @@ type TTSResponse struct {
 // 文本转语音
 // / text-> 文本
 // / return -> 音频文件路径
+// 文档 https://developer.qiniu.com/aitokenapi/12981/asr-tts-ocr-api
 func TTSHandle(text string) (string, error) {
 
 	// 构造请求结构体
