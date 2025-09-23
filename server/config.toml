@@ -19,3 +19,8 @@ model_type = "nvidia/llama-3.3-nemotron-super-49b-v1.5"
 model_uri = "https://openai.qiniu.com/v1"
 # llvm api key
 llvm_api_key = "sk-3b0df56d192a48de3fee674eb7c491ab86f69609c1c2e94ea1001556b967829f"
+
+# whisper 配置
+[whisper]
+# whisper模型类型 tiny base small medium large 类型越大越准确，时间越长
+model_type = "medium"

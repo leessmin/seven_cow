@@ -22,6 +22,9 @@ type Config struct {
 		ModelUri  string `toml:"model_uri"`
 		LlmApiKey string `toml:"llvm_api_key"`
 	} `toml:"llm"`
+	Whisper struct {
+		ModelType string `toml:"model_type"`
+	} `toml:"whisper"`
 }
 
 var ConfigValue = sync.OnceValue(func() *Config {

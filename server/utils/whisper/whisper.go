@@ -5,6 +5,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"sevent_cow/config"
 	"strings"
 )
 
@@ -23,7 +24,7 @@ func WhisperHandle(filePath string) (string, error) {
 	cmd := exec.Command(
 		"whisper",
 		filePath,
-		"--model", "tiny",
+		"--model", config.ConfigValue().Whisper.ModelType,
 		"--language", "zh",
 		"--initial_prompt", "以下是普通话的句子。",
 		"--fp16", "False",
