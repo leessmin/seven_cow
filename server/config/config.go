@@ -17,6 +17,11 @@ type Config struct {
 	DB struct {
 		Postgresql string `toml:"postgresql"`
 	} `toml:"db"`
+	LLM struct {
+		ModelType string `toml:"model_type"`
+		ModelUri  string `toml:"model_uri"`
+		LlmApiKey string `toml:"llvm_api_key"`
+	} `toml:"llm"`
 }
 
 var ConfigValue = sync.OnceValue(func() *Config {

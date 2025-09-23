@@ -1,0 +1,7 @@
+[llm]
+# 模型类型，支持：https://www.qiniu.com/ai/models
+model_type = "nvidia/llama-3.3-nemotron-super-49b-v1.5"
+# 模型接口地址
+model_uri = "https://openai.qiniu.com/v1/chat/completions"
+# llvm api key
+llvm_api_key = "sk-3b0df56d192a48de3fee674eb7c491ab86f69609c1c2e94ea1001556b967829f"
