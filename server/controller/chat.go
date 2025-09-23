@@ -26,6 +26,7 @@ func init() {
 	chatRouter.POST("/create", controller.CreateChat)
 	chatRouter.POST("/send", controller.SendMessage)
 	chatRouter.GET("/content", controller.ChatContent)
+	chatRouter.GET("/get_chat_rooms", controller.GetChatRooms)
 }
 
 type ChatController struct{}
@@ -190,6 +191,21 @@ func (cc *ChatController) ChatContent(c *gin.Context) {
 		}
 	}
 
+}
+
+// 获取聊天室
+func (cc *ChatController) GetChatRooms(c *gin.Context) {
+	userId, _ := c.Get("userId")
+	uId := userId.(int64)
+
+	var chats []entity.Chat
+
+	if err := db.DB().Preload("Role").Where("user_id = ?", uId).Order("created_time DESC").Find(&chats).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, response.ResponseInternalServerErr("获取失败, 原因：少打听"))
+		return
+	}
+
+	c.JSON(http.StatusOK, response.ResponseOk(chats))
 }
 
 func (cc *ChatController) sendSSE(c *gin.Context, msg sse.ChatContent) error {
