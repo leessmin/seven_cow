@@ -7,6 +7,7 @@ import (
 	"sevent_cow/response"
 	"sevent_cow/router"
 	"sevent_cow/utils/llm"
+	"sevent_cow/utils/tts"
 
 	"github.com/gin-gonic/gin"
 )
@@ -91,11 +92,19 @@ func (cc *ChatController) SendMessage(c *gin.Context) {
 		return
 	}
 
+	// ai文本转语音
+	aiAudioLink, err := tts.TTSHandle(aiContent)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, response.ResponseInternalServerErr("发送失败, 原因：少打听"))
+		return
+	}
+
 	// 将AI回复的消息插入数据库
 	if err := db.DB().Create(&entity.ChatMsg{
-		ChatId:  req.ChatId,
-		MsgType: 2, // 1代表用户 2代表ai
-		Content: aiContent,
+		ChatId:    req.ChatId,
+		MsgType:   2, // 1代表用户 2代表ai
+		Content:   aiContent,
+		AudioLink: aiAudioLink,
 	}).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, response.ResponseInternalServerErr("发送失败, 原因：少打听"))
 		return
