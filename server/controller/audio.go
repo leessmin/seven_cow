@@ -8,6 +8,7 @@ import (
 	"sevent_cow/response"
 	"sevent_cow/router"
 	"sevent_cow/utils/whisper"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -47,6 +48,6 @@ func (ac *AudioController) SendAudio(c *gin.Context) {
 
 	c.JSON(http.StatusOK, response.ResponseOk(gin.H{
 		"audioLink": "/upload/" + filename,
-		"content":   content,
+		"content":   strings.Trim(content, "\n"),
 	}))
 }
