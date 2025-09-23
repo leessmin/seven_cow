@@ -22,11 +22,12 @@ func init() {
 	controller := ChatController{}
 
 	chatRouter := router.ApiRouter().Group("/chat", router.AuthMiddleware())
+	chatSSERouter := router.ApiRouter().Group("/chat_sse")
 
 	chatRouter.POST("/create", controller.CreateChat)
 	chatRouter.POST("/send", controller.SendMessage)
-	chatRouter.GET("/content", controller.ChatContent)
 	chatRouter.GET("/get_chat_rooms", controller.GetChatRooms)
+	chatSSERouter.GET("/content", controller.ChatContent)
 }
 
 type ChatController struct{}
@@ -183,6 +184,7 @@ func (cc *ChatController) ChatContent(c *gin.Context) {
 	for {
 		// 监听 channel 推送新消息
 		for msg := range ch {
+			log.Println("ok")
 			if err := cc.sendSSE(c, msg); err != nil {
 				log.Println("sse关闭，原因：", err)
 				break

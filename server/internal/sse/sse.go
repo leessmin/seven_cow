@@ -22,7 +22,7 @@ func RegisterSSE(chatId int64) chan ChatContent {
 
 	ch, ok := ChatSSEChannels[chatId]
 	if !ok {
-		ch = make(chan ChatContent, 10) // 带缓冲
+		ch = make(chan ChatContent)
 		ChatSSEChannels[chatId] = ch
 	}
 	return ch
