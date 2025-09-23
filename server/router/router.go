@@ -9,6 +9,7 @@ import (
 
 func init() {
 	Router().Static("/upload", config.ConfigValue().Server.UploadDir)
+	Router().Static("/assert", "./assert")
 }
 
 // '/'
