@@ -53,7 +53,7 @@ func RequireLLM(reqBody ChatRequest) (string, error) {
 	}
 
 	client := &http.Client{}
-	req, err := http.NewRequest(method, config.ConfigValue().LLM.ModelUri, bytes.NewBuffer(payload))
+	req, err := http.NewRequest(method, config.ConfigValue().LLM.ModelUri+"/chat/completions", bytes.NewBuffer(payload))
 	if err != nil {
 		return "", err
 	}
@@ -72,7 +72,7 @@ func RequireLLM(reqBody ChatRequest) (string, error) {
 		return "", err
 	}
 
-	if res.Status != "200 OK" {
+	if res.StatusCode != http.StatusOK {
 		return "", fmt.Errorf("LLM请求失败: %s", string(body))
 	}
 

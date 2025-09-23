@@ -1,12 +1,12 @@
 package controller
 
 import (
-	"fmt"
 	"net/http"
 	"sevent_cow/db"
 	"sevent_cow/entity"
 	"sevent_cow/response"
 	"sevent_cow/router"
+	"sevent_cow/utils/llm"
 
 	"github.com/gin-gonic/gin"
 )
@@ -55,7 +55,7 @@ func (cc *ChatController) CreateChat(c *gin.Context) {
 func (cc *ChatController) SendMessage(c *gin.Context) {
 	type Require struct {
 		ChatId    int64  `json:"chatId" binding:"required"`
-		Content   string `json:"content" binding:"required"`
+		Content   string `json:"content"`
 		AudioLink string `json:"audioLink" binding:"required"`
 	}
 
@@ -68,6 +68,7 @@ func (cc *ChatController) SendMessage(c *gin.Context) {
 
 	var chat entity.Chat
 
+	// 获取聊天窗口信息
 	if err := db.DB().Preload("Role").Where("id = ?", req.ChatId).First(&chat).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, response.ResponseInternalServerErr("发送失败, 原因：少打听"))
 		return
@@ -84,8 +85,21 @@ func (cc *ChatController) SendMessage(c *gin.Context) {
 		return
 	}
 
-	// TODO: 发送消息给ai等待ai应答
-	fmt.Println(chat)
+	aiContent, err := llm.RequireLLM(*llm.NewChatRequest(llm.NewMessages(chat.Role.Prompt, req.Content)))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, response.ResponseInternalServerErr("发送失败, 原因：少打听"))
+		return
+	}
+
+	// 将AI回复的消息插入数据库
+	if err := db.DB().Create(&entity.ChatMsg{
+		ChatId:  req.ChatId,
+		MsgType: 2, // 1代表用户 2代表ai
+		Content: aiContent,
+	}).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, response.ResponseInternalServerErr("发送失败, 原因：少打听"))
+		return
+	}
 
 	c.JSON(http.StatusOK, response.ResponseOk("发送成功"))
 }

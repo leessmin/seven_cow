@@ -1,10 +1,15 @@
 package router
 
 import (
+	"sevent_cow/config"
 	"sync"
 
 	"github.com/gin-gonic/gin"
 )
+
+func init() {
+	Router().Static("/upload", config.ConfigValue().Server.UploadDir)
+}
 
 // '/'
 var Router = sync.OnceValue(func() *gin.Engine {
