@@ -1,7 +1,6 @@
-import type { Response } from "./api.type";
 
-export type RegisterRequireType = Response<{
+export type RegisterRequireType = {
 	id: number,
 	fingerprint: string,
 	createdTime: string,
-}>
+}

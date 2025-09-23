@@ -93,7 +93,7 @@ class MyFetch {
 	}
 
 	// 发送请求
-	async Require<T>(url: string, method: RequestInit): Promise<T | null> {
+	async Require<T>(url: string, method: RequestInit = {}): Promise<T | null> {
 		// 拼接请求路径
 		url = this.pathJoin(this.baseUrl, url)
 
