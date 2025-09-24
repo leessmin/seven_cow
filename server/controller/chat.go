@@ -105,7 +105,7 @@ func (cc *ChatController) SendMessage(c *gin.Context) {
 	db.DB().Where("chat_id = ?", chat.ID).Order("created_time ASC").Find(&chatMsg)
 	historyLLMMsg := make([]llm.Message, len(chatMsg))
 	for i, v := range chatMsg {
-		role := "system"
+		role := "assistant"
 		if v.MsgType == 1 {
 			role = "user"
 		}
