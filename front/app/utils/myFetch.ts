@@ -201,7 +201,7 @@ class MyFetch {
 		})
 
 		let path: string = pathArr.join("/")
-		return path
+		return `/${path}`
 	}
 
 }

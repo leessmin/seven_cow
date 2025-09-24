@@ -1,7 +1,7 @@
 import { getToken } from '~/utils/token'
 import MyFetch from '~/utils/myFetch'
 
-const apiFetch = new MyFetch("/api", 2000)
+const apiFetch = new MyFetch("/api", 1000 * 30)
 
 apiFetch.addInterceptorsReq((url: string, method: RequestInit) => {
 	method.headers = {
