@@ -55,7 +55,6 @@ export default function Chat() {
 	const chatRef = useRef(chat);
 	useEffect(() => {
 		chatRef.current = chat;
-		console.log(content, chat)
 	}, [content, chat])
 
 	const onAudioBlob = async (audioBlob: Blob) => {
