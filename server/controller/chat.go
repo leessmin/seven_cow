@@ -101,7 +101,21 @@ func (cc *ChatController) SendMessage(c *gin.Context) {
 		})
 	}
 
-	aiContent, err := llm.RequireLLM(*llm.NewChatRequest(llm.NewMessages(chat.Role.Prompt, req.Content)))
+	var chatMsg []entity.ChatMsg
+	db.DB().Where("chat_id = ?", chat.ID).Order("created_time ASC").Find(&chatMsg)
+	historyLLMMsg := make([]llm.Message, len(chatMsg))
+	for i, v := range chatMsg {
+		role := "system"
+		if v.MsgType == 1 {
+			role = "user"
+		}
+		msg := llm.Message{
+			Role:    role,
+			Content: v.Content,
+		}
+		historyLLMMsg[i] = msg
+	}
+	aiContent, err := llm.RequireLLM(*llm.NewChatRequest(llm.NewMessages(chat.Role.Prompt, req.Content, historyLLMMsg)))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, response.ResponseInternalServerErr("发送失败, 原因：少打听"))
 		return

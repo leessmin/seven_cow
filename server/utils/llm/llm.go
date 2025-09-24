@@ -30,17 +30,15 @@ func NewChatRequest(messages []Message) *ChatRequest {
 	}
 }
 
-func NewMessages(systemContent, userContent string) []Message {
-	return []Message{
-		{
-			Role:    "system",
-			Content: systemContent,
-		},
-		{
-			Role:    "user",
-			Content: userContent,
-		},
-	}
+func NewMessages(systemContent, userContent string, historyMsg []Message) []Message {
+	historyMsg = append(historyMsg, Message{
+		Role:    "system",
+		Content: systemContent,
+	}, Message{
+		Role:    "user",
+		Content: userContent,
+	})
+	return historyMsg
 }
 
 // 请求大语言模型
