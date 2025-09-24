@@ -10,6 +10,7 @@ import toast from "react-hot-toast";
 import type { ChatListRequireType } from "~/api/chat.type";
 import dayjs from "dayjs";
 import LoadingBox from "~/components/LoadingBox";
+import { Link } from "react-router";
 
 export function meta({ }: Route.MetaArgs) {
 	return [
@@ -145,18 +146,20 @@ export default function Home() {
 		<main>
 			<ul>
 				{chatRoomsLoading ? <LoadingBox /> : chatRooms.map(room => {
-					return <li className="flex justify-between px-2 py-2 border-b border-gray-200" key={room.id}>
-						<div className="flex">
-							<div className="w-16 h-16 mr-3 rounded-xl overflow-hidden">
-								<img src={room.role.img} alt="" className="w-full h-full object-cover" />
+					return <Link key={room.id} to={`/chat/${room.id}`}>
+						<li className="flex justify-between px-2 py-2 border-b border-gray-200">
+							<div className="flex">
+								<div className="w-16 h-16 mr-3 rounded-xl overflow-hidden">
+									<img src={room.role.img} alt="" className="w-full h-full object-cover" />
+								</div>
+								<h3 className="font-bold">{room.name}</h3>
 							</div>
-							<h3 className="font-bold">{room.name}</h3>
-						</div>
-						<div className="h-full">
-							<p className="text-xs text-gray-500">{dayjs(room.createdTime).format("YYYY-MM-DD hh:mm:ss")}</p>
-							<p className="text-xs text-gray-500 mt-2 text-right">角色: {room.role.name}</p>
-						</div>
-					</li>
+							<div className="h-full">
+								<p className="text-xs text-gray-500">{dayjs(room.createdTime).format("YYYY-MM-DD hh:mm:ss")}</p>
+								<p className="text-xs text-gray-500 mt-2 text-right">角色: {room.role.name}</p>
+							</div>
+						</li>
+					</Link>
 				})}
 			</ul>
 		</main>
