@@ -41,3 +41,15 @@ func BroadcastSSE(chatId int64, msg ChatContent) {
 		}
 	}
 }
+
+// UnregisterSSE 通过chatId删除 channel
+func UnregisterSSE(chatId int64) {
+	ChatSSELock.Lock()
+	defer ChatSSELock.Unlock()
+
+	ch, ok := ChatSSEChannels[chatId]
+	if ok {
+		close(ch)
+		delete(ChatSSEChannels, chatId)
+	}
+}

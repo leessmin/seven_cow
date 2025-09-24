@@ -13,7 +13,6 @@ import (
 	"sevent_cow/utils/llm"
 	"sevent_cow/utils/tts"
 	"strconv"
-	"time"
 
 	"github.com/gin-gonic/gin"
 )
@@ -181,17 +180,24 @@ func (cc *ChatController) ChatContent(c *gin.Context) {
 	// 注册 SSE channel
 	ch := sse.RegisterSSE(chatIdInt64)
 
+	ctx := c.Request.Context()
+
+	// 监听 channel 推送新消息
 	for {
-		// 监听 channel 推送新消息
-		for msg := range ch {
-			if err := cc.sendSSE(c, msg); err != nil {
-				log.Println("sse关闭，原因：", err)
-				break
+		select {
+		case msg, ok := <-ch:
+			if !ok {
+				return
 			}
-			time.Sleep(time.Millisecond * 50) // 防止 CPU 空转 占用过多cpu
+			if err := cc.sendSSE(c, msg); err != nil {
+				return
+			}
+		case <-ctx.Done():
+			log.Println("客户端关闭")
+			sse.UnregisterSSE(chatIdInt64)
+			return
 		}
 	}
-
 }
 
 // 获取聊天室
