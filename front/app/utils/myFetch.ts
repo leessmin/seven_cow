@@ -1,11 +1,11 @@
 // 定义请求拦截器 的集合
-let interceptorsReq: ((method: RequestInit) => void)[] = []
+const interceptorsReq: ((method: RequestInit) => void)[] = []
 // 请求拦截器 错误处理的集合
-let interceptorsReqError = []
+const interceptorsReqError = []
 // 定义响应拦截器 的集合
-let intercepTorsRes: (() => void)[] = []
+const intercepTorsRes: (() => void)[] = []
 // 定义响应拦截器 错误处理的集合
-let interceptorsResError = []
+const interceptorsResError = []
 
 // 定义一个自己的fetch
 class MyFetch {

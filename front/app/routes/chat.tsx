@@ -1,6 +1,6 @@
 import { useNavigate, useParams } from "react-router";
 import { BsChevronLeft } from 'react-icons/bs';
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { chatContent } from "~/api/chatSSE";
 import type { ChatContentChatType, ChatContentMsgType } from "~/api/chatSSE.type";
 import { LuVolume, LuVolume1, LuVolume2 } from 'react-icons/lu';

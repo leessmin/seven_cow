@@ -1,5 +1,7 @@
 import { getToken } from '~/utils/token'
 import MyFetch from '~/utils/myFetch'
+import type { Response } from './api.type'
+import toast from 'react-hot-toast'
 
 const apiFetch = new MyFetch("/api", 1000 * 30)
 
@@ -10,6 +12,15 @@ apiFetch.addInterceptorsReq((url: string, method: RequestInit) => {
 	}
 
 	return { url, method, abort: false }
+})
+
+apiFetch.addInterceptorsRes(<T>(result: T) => {
+	let res = result as Response<any>
+	if (res.code != 200) {
+		toast.error(res.msg)
+	}
+
+	return { result, abort: false }
 })
 
 export default apiFetch
