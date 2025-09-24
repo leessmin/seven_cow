@@ -31,10 +31,11 @@ func NewChatRequest(messages []Message) *ChatRequest {
 }
 
 func NewMessages(systemContent, userContent string, historyMsg []Message) []Message {
-	historyMsg = append(historyMsg, Message{
+	historyMsg = append([]Message{{
 		Role:    "system",
 		Content: systemContent,
-	}, Message{
+	}}, historyMsg...)
+	historyMsg = append(historyMsg, Message{
 		Role:    "user",
 		Content: userContent,
 	})
