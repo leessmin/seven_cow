@@ -39,6 +39,9 @@ export default function Chat() {
 
 	const [recording, setRecording] = useState(false)
 
+	// 滚动聊天窗口底部元素
+	const bottomRef = useRef<HTMLDivElement | null>(null)
+
 	// 当前播放的音频，全局只能有一个地方播放音频
 	const [currentAudio, setCurrentAudio] = useState<HTMLAudioElement | null>(null)
 	const handlePlay = (audio: HTMLAudioElement) => {
@@ -55,24 +58,32 @@ export default function Chat() {
 	const chatRef = useRef(chat);
 	useEffect(() => {
 		chatRef.current = chat;
+		bottomRef.current?.scrollIntoView({ behavior: "smooth" })
 	}, [content, chat])
 
+	const [loading, setLoading] = useState(false)
 	const onAudioBlob = async (audioBlob: Blob) => {
-		const chat = chatRef.current
-		// 上传录音
-		const formData = new FormData()
-		formData.append("audio", audioBlob, "recording.wav")
-		const res = await sendAudioRequire(formData)
+		setLoading(true)
+		try {
 
+			const chat = chatRef.current
+			// 上传录音
+			const formData = new FormData()
+			formData.append("audio", audioBlob, "recording.wav")
+			const res = await sendAudioRequire(formData)
 
-		// 上传语音信息
-		const result = await sendChatMsgRequire({
-			chatId: chat!.id,
-			content: res!.data.content,
-			audioLink: res!.data.audioLink
-		})
-		// TODO: 需要做loading效果
-		console.log(result);
+			// 上传语音信息
+			const result = await sendChatMsgRequire({
+				chatId: chat!.id,
+				content: res!.data.content,
+				audioLink: res!.data.audioLink
+			})
+		} catch (e) {
+			toast.error("发生了错误: " + e)
+			console.log(e);
+		} finally {
+			setLoading(false)
+		}
 	}
 
 	return <div className="relative">
@@ -102,9 +113,17 @@ export default function Chat() {
 					</ChatMessage>
 				})}
 			</ul>
+			{
+				loading &&
+				<div className="w-full flex justify-center text-info">
+					<span className="loading loading-dots loading-xl"></span>
+				</div>
+			}
+			<div ref={bottomRef}></div>
+
 		</main>
 
-		<Recording onAudioBlob={onAudioBlob} onStart={() => {
+		<Recording loading={loading} onAudioBlob={onAudioBlob} onStart={() => {
 			setRecording(true)
 			setDefaultPlay(true)
 		}} onStop={() => setRecording(false)} />
@@ -212,7 +231,7 @@ function ChatMessage(
 }
 
 // 底部录音按钮
-function Recording({ onStart, onStop, onAudioBlob }: { onStart: () => void, onStop: () => void, onAudioBlob: (b: Blob) => Promise<void> }) {
+function Recording({ onStart, onStop, onAudioBlob, loading }: { onStart: () => void, onStop: () => void, onAudioBlob: (b: Blob) => Promise<void>, loading: boolean }) {
 	const mediaRecorderRef = useRef<MediaRecorder>(null);
 	const audioChunksRef = useRef<Blob[]>([]);
 
@@ -247,7 +266,9 @@ function Recording({ onStart, onStop, onAudioBlob }: { onStart: () => void, onSt
 	const buttonRef = useRef<HTMLButtonElement>(null);
 
 	useEffect(() => {
-		const button = buttonRef.current!
+		if (!buttonRef.current) return
+
+		const button = buttonRef.current
 
 		const handleTouchStart = (e: TouchEvent) => {
 			e.preventDefault()
@@ -267,11 +288,14 @@ function Recording({ onStart, onStop, onAudioBlob }: { onStart: () => void, onSt
 			button.removeEventListener("touchstart", handleTouchStart)
 			button.removeEventListener("touchend", handleTouchEnd)
 		};
-	}, []);
+	}, [loading]);
 
 	return <>
 		<footer className="w-full flex justify-center items-center py-1">
-			<button ref={buttonRef} className="w-20 h-20 rounded-full bg-red-400 border-4 border-gray-200"></button>
+			{
+				loading ? <span className="loading loading-ring w-20 h-20 text-info"></span> :
+					<button ref={buttonRef} className="w-20 h-20 rounded-full bg-red-400 border-4 border-gray-200"></button>
+			}
 		</footer>
 	</>
 }
