@@ -121,7 +121,7 @@ func (cc *ChatController) SendMessage(c *gin.Context) {
 			ChatId:    req.ChatId,
 			MsgType:   2, // 1代表用户 2代表ai
 			Content:   aiContent,
-			AudioLink: aiAudioLink,
+			AudioLink: "/" + aiAudioLink,
 		}
 		if err := db.DB().Create(&chatMsg).Error; err != nil {
 			c.JSON(http.StatusInternalServerError, response.ResponseInternalServerErr("发送失败, 原因：少打听"))
@@ -184,7 +184,6 @@ func (cc *ChatController) ChatContent(c *gin.Context) {
 	for {
 		// 监听 channel 推送新消息
 		for msg := range ch {
-			log.Println("ok")
 			if err := cc.sendSSE(c, msg); err != nil {
 				log.Println("sse关闭，原因：", err)
 				break
