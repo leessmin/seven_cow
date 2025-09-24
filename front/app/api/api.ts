@@ -3,7 +3,8 @@ import MyFetch from '~/utils/myFetch'
 import type { Response } from './api.type'
 import toast from 'react-hot-toast'
 
-const apiFetch = new MyFetch("/api", 1000 * 30)
+// 超时时间 一个小时
+const apiFetch = new MyFetch("/api", 1000 * 60 * 60)
 
 apiFetch.addInterceptorsReq((url: string, method: RequestInit) => {
 	method.headers = {
