@@ -14,7 +14,7 @@ postgresql = "host=192.168.56.6 user=postgres password=1425 dbname=seven_cow por
 
 [llm]
 # 模型类型，支持：https://www.qiniu.com/ai/models
-model_type = "nvidia/llama-3.3-nemotron-super-49b-v1.5"
+model_type = "gpt-oss-120b"
 # 模型接口地址
 model_uri = "https://openai.qiniu.com/v1"
 # llvm api key
