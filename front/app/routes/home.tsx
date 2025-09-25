@@ -20,28 +20,37 @@ export function meta({ }: Route.MetaArgs) {
 }
 
 // 初始化登陆
-const initialLogin = () => {
-	const token = getToken()
-	if (token.length === 0) {
-		// 注册
-		fpPromise.load()
-			.then(fp => fp.get())
-			.then(async result => {
-				const formData = new FormData()
-				formData.append("fingerprint", result.visitorId)
-				const res = await registerRequire(formData)
-				if (res?.code === 200) {
-					setToken(res.data.id.toString())
-				}
-			})
-	}
+const useInitialLogin = () => {
+	const [tokenV, setTokenV] = useState("")
+
+	useEffect(() => {
+		const token = getToken()
+		setTokenV(token)
+		if (token.length === 0) {
+			// 注册
+			fpPromise.load()
+				.then(fp => fp.get())
+				.then(async result => {
+					const formData = new FormData()
+					formData.append("fingerprint", result.visitorId)
+					const res = await registerRequire(formData)
+					if (res?.code === 200) {
+						setToken(res.data.id.toString())
+						setTokenV(res.data.id.toString())
+					}
+				})
+		}
+	}, [])
+
+	return { tokenV }
 }
 
-const useRoleModals = () => {
+const useRoleModals = (tokenV: string) => {
 	const [roles, setRoles] = useState<RolesRequireType[]>()
 	const [loading, setLoading] = useState<boolean>(false)
 
 	useEffect(() => {
+		if (tokenV.length == 0) return
 		setLoading(true)
 		// 获取角色
 		rolesRequire().then(res => {
@@ -51,7 +60,7 @@ const useRoleModals = () => {
 		}).finally(() => {
 			setLoading(false)
 		})
-	}, [])
+	}, [tokenV])
 
 	return { roles, loading }
 }
@@ -84,7 +93,7 @@ function CreateChatDialog({ ref, roleId, createDone }: { ref: React.RefObject<HT
 	</dialog>
 }
 
-const useChatRooms = () => {
+const useChatRooms = (tokenV: string) => {
 	const [chatRooms, setChatRooms] = useState<ChatListRequireType[]>([])
 	const [loading, setLoading] = useState(false)
 
@@ -103,22 +112,21 @@ const useChatRooms = () => {
 	}, [])
 
 	useEffect(() => {
+		if (tokenV.length == 0) return
 		getChatRooms()
-	}, [])
+	}, [tokenV])
 
 	return { chatRooms, getChatRooms, loading }
 }
 
 export default function Home() {
+	const { tokenV } = useInitialLogin()
+
 	const createChatModal = useRef<HTMLDialogElement | null>(null)
 	const aiRoleModal = useRef<HTMLDialogElement | null>(null)
-	const { roles, loading } = useRoleModals()
+	const { roles, loading } = useRoleModals(tokenV)
 	const [roleId, setRoleId] = useState(0)
-	const { chatRooms, getChatRooms, loading: chatRoomsLoading } = useChatRooms()
-
-	useEffect(() => {
-		initialLogin()
-	}, [])
+	const { chatRooms, getChatRooms, loading: chatRoomsLoading } = useChatRooms(tokenV)
 
 	const onClickCreateChat = (roleId: number) => {
 		setRoleId(roleId)
