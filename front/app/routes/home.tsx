@@ -163,7 +163,7 @@ export default function Home() {
 								<h3 className="font-bold">{room.name}</h3>
 							</div>
 							<div className="h-full">
-								<p className="text-xs text-gray-500">{dayjs(room.createdTime).format("YYYY-MM-DD hh:mm:ss")}</p>
+								<p className="text-xs text-gray-500">{dayjs(room.createdTime).format("YYYY-MM-DD HH:mm:ss")}</p>
 								<p className="text-xs text-gray-500 mt-2 text-right">角色: {room.role.name}</p>
 							</div>
 						</li>
