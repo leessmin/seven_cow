@@ -238,6 +238,9 @@ function Recording({ onStart, onStop, onAudioBlob, loading }: { onStart: () => v
 	const startRecording = async () => {
 		onStart()
 		try {
+			// 每次开始录音时清空旧数据
+			audioChunksRef.current = []
+
 			const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
 			mediaRecorderRef.current = new MediaRecorder(stream)
 
