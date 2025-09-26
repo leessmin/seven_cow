@@ -23,4 +23,4 @@ llvm_api_key = "sk-3b0df56d192a48de3fee674eb7c491ab86f69609c1c2e94ea1001556b9678
 # whisper 配置
 [whisper]
 # whisper模型类型 tiny base small medium large 类型越大越准确，时间越长
-model_type = "medium"
+model_type = "tiny"
