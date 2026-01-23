@@ -8,6 +8,7 @@ const intercepTorsRes: (() => void)[] = []
 const interceptorsResError = []
 
 // 定义一个自己的fetch
+//  fetch
 class MyFetch {
 	// 底层的baseUrl
 	private baseUrl: string

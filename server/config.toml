@@ -18,7 +18,7 @@ model_type = "gpt-oss-120b"
 # 模型接口地址
 model_uri = "https://openai.qiniu.com/v1"
 # llvm api key
-llvm_api_key = "sk-3b0df56d192a48de3fee674eb7c491ab86f69609c1c2e94ea1001556b967829f"
+llvm_api_key = "sk-4461895c6b88f6d028a108640a2afd4d811bb148af522fefba0a0fe78a61a1fc"
 
 # whisper 配置
 [whisper]
